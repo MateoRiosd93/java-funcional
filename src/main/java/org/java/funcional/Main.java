@@ -5,11 +5,10 @@ import org.java.funcional.model.Product;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -28,9 +27,10 @@ public class Main {
         Product balon = new Product(2, "Balon adidas", 120000.0);
         Product monitor = new Product(3, "Monitor LG", 500000.0);
         Product teclado = new Product(4, "Teclado logitech", 2500000.0);
+        Product monitor2 = new Product(5, "Monitor LG", 500000.0);
 
         List<Person> personas = Arrays.asList(mateo, santiago, alejandra, maria, gloria, ivan, roma);
-        List<Product> productos = Arrays.asList(play, balon, monitor, teclado);
+        List<Product> productos = Arrays.asList(play, balon, monitor, teclado, monitor2);
 
         /* Lambda (En programacion funcional)
          * Basicamente es un metodo que se pasa por referencia es una manera corta de crear una funcion () -> {}
@@ -103,12 +103,87 @@ public class Main {
         Comparator<Person> byNamesAsc = (persona1, person2) -> persona1.getName().compareTo(person2.getName());
         Comparator<Person> byNamesAsc2 = Comparator.comparing(Person::getName);
 
+        System.out.println("///////////////");
+
         // sorted (parametro: Comparator)
         List<Person> listOrdenada = personas.stream()
                 .sorted(byNamesAsc2)
                 .toList();
 
         Main.printList(listOrdenada);
+
+
+        // match (parametro: Predicate)
+        // Predicate para evaluar que person.name empiece con la letra M
+        Predicate<Person> startWithM = person -> person.getName().startsWith("M");
+        System.out.println("///////////////");
+
+        // anyMatch: No recorre tod@ el stream, termina en la primera coincidencia
+        Boolean respuesta1 = personas.stream()
+                .anyMatch(startWithM);
+
+        System.out.println(respuesta1);
+        System.out.println("///////////////");
+
+        // allMatch: recorre tod@ el stream bajo la condicion. si todos cumplen return true de lo contrario retorna false
+        Boolean respuesta2 = personas.stream()
+                .allMatch(startWithM);
+
+        System.out.println(respuesta2);
+        System.out.println("///////////////");
+
+        // noneMatch: recorre tod@ el stream bajo la condicion. si ninguno cumple return true de lo contrario retorna false
+        Boolean respuesta3 = personas.stream()
+                .noneMatch(startWithM);
+
+        System.out.println(respuesta3);
+        System.out.println("///////////////");
+
+        // skip -  limit : Sirve para el tema de paginacion
+        int pageNumber = 0;
+        int pageSize = 2;
+        List<Person> filteredList4 = personas.stream()
+                .skip(pageNumber * pageSize)
+                .limit(pageSize)
+                .toList();
+
+        Main.printList(filteredList4);
+        System.out.println("///////////////");
+
+        // Collectors
+        // groupingBy : Ejemplo agrupar productos que sean mayores a 250mil
+        Map<Double, List<Product>> filteredProducts = productos.stream()
+                .filter(product -> product.getPrice() > 250000.0)
+                .collect(Collectors.groupingBy(Product::getPrice));
+
+        System.out.println(filteredProducts);
+        System.out.println("///////////////");
+
+        // Counting : Ejemplo agrupa por nombre y cuenta cuantas veces se encuentra el producto
+        Map<String, Long> countProducts = productos.stream()
+                .collect(Collectors.groupingBy(Product::getName, Collectors.counting()));
+
+        System.out.println(countProducts);
+        System.out.println("///////////////");
+
+        // Agrupar por nombre de producto y sumar los precios
+        Map<String, Double> sumProducts = productos.stream()
+                .collect(Collectors.groupingBy(Product::getName, Collectors.summingDouble(Product::getPrice)));
+
+        System.out.println(sumProducts);
+        System.out.println("///////////////");
+
+        // Obtener la suma y el resumen
+        DoubleSummaryStatistics statistics = productos.stream().collect(Collectors.summarizingDouble(Product::getPrice));
+
+        System.out.println(statistics);
+        System.out.println("///////////////");
+
+        // reduce: obtener la sumatoria de todos los precios de los productos
+        // Double sumatory = productos.stream().map(Product::getPrice).reduce(0.0, (subtotal, price) ->  subtotal + price);
+        Optional<Double> sumatory = productos.stream().map(Product::getPrice).reduce(Double::sum);
+        System.out.println(sumatory.get());
+
     }
 
     public static int getAge(LocalDate birthDate){
