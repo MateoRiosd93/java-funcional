@@ -4,8 +4,12 @@ import org.java.funcional.model.Person;
 import org.java.funcional.model.Product;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -18,15 +22,101 @@ public class Main {
         Person maria = new Person(4, "Maria Fernanda", LocalDate.of(1995,10,11));
         Person gloria = new Person(5, "Gloria", LocalDate.of(1961,4,3));
         Person ivan = new Person(6, "Ivan", LocalDate.of(1963,8,9));
+        Person roma = new Person(7, "Roma", LocalDate.of(2022, 9, 8));
 
         Product play = new Product(1, "Play station 5", 2500000.0);
         Product balon = new Product(2, "Balon adidas", 120000.0);
         Product monitor = new Product(3, "Monitor LG", 500000.0);
         Product teclado = new Product(4, "Teclado logitech", 2500000.0);
 
-        List<Person> personas = Arrays.asList(mateo, santiago, alejandra, maria, gloria, ivan);
+        List<Person> personas = Arrays.asList(mateo, santiago, alejandra, maria, gloria, ivan, roma);
         List<Product> productos = Arrays.asList(play, balon, monitor, teclado);
 
+        /* Lambda (En programacion funcional)
+         * Basicamente es un metodo que se pasa por referencia es una manera corta de crear una funcion () -> {}
+         *
+         * Una lambda tambien puede describirse como una funcion anonima (parametro) -> { cuerpo de la funcion }
+         *
+         * Java lo que hace es que convierte esta lambda en una implementacion de una Interfaz
+         * Funcinal @FunctionalInterface, como Consumer, Function, Predicate, etc...
+         *
+         * Sirve:
+         * Para escribir código más limpio y corto
+         * Para trabajar fácilmente con streams, listas, filtros, y transformaciones de datos
+         * Para usar programación funcional en Java
+         */
 
+
+        // Ejemplo: Recorer e imprimir en pantalla cada una de las personas de la lista
+        // Imperativo
+        for(int i = 0; i < personas.size(); i++){
+            System.out.println(personas.get(i));
+        }
+
+        System.out.println("///////////////");
+
+        for(Person persona : personas){
+            System.out.println(persona);
+        }
+
+
+        System.out.println("///////////////");
+        // Funcional
+        personas.forEach(persona -> System.out.println(persona));
+        // Metodos como referencia: si tenemos una lambda en donde el parametro que recibe es el mismo
+        // que se envia a la funcion que se esta llamando podemos expresarlo de la siguiente manera.
+        System.out.println("///////////////");
+        personas.forEach(System.out::println);
+
+
+        // NOTA: Cuando trabajamos en la programacion funcional debemos pensar en que es lo que se necesita
+        // mas no en como lo necesitas!
+
+
+        // Predicate @FunctionalInterface <Parametro que recibe>
+        Predicate<Person> getOlders = persona -> Main.getAge(persona.getBirthDate()) >= 18;
+
+        // stream(): es un metodo que facilita trabajar de una forma declarativa con las colecciones
+        // filter (parametro: Predicate) Permite filtrar una lista dependiendo de una condicion retornando una nueva lista
+        // filtrar todas las personas que tengan mas de 18 años
+        System.out.println("///////////////");
+        List<Person> mayoresDeEdad = personas.stream()
+                .filter(getOlders)
+                .toList();
+
+        Main.printList(mayoresDeEdad);
+
+
+        // Interfaz @FunctionalInterface <Parametro que recibe, Parametro que retorna>
+        Function<LocalDate, Integer> getAges = Main::getAge;
+
+        // map (parametro: Function) Permite devolver una nueva lista
+        // Crear una lista con todas las edades de las personas
+        System.out.println("///////////////");
+        List<Integer> edades = personas.stream()
+                .map(Person::getBirthDate)
+                .map(getAges)
+                .toList();
+
+        Main.printList(edades);
+
+        Comparator<Person> byNamesAsc = (persona1, person2) -> persona1.getName().compareTo(person2.getName());
+        Comparator<Person> byNamesAsc2 = Comparator.comparing(Person::getName);
+
+        // sorted (parametro: Comparator)
+        List<Person> listOrdenada = personas.stream()
+                .sorted(byNamesAsc2)
+                .toList();
+
+        Main.printList(listOrdenada);
+    }
+
+    public static int getAge(LocalDate birthDate){
+        return Period.between(birthDate, LocalDate.now()).getYears();
+    }
+
+    // ? es igual a decir <? extends Objects> es decir viene algo generico
+    public static void printList(List<?> lista){
+        lista.forEach(System.out::println);
     }
 }
